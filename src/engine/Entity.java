@@ -1,25 +1,26 @@
 package engine;
 
 import engine.loaders.Model;
-import engine.renderer.Texture;
+import engine.renderer.Material;
 import org.lwjgl.util.vector.Vector3f;
 
 public class Entity extends Model {
     protected Vector3f position, rotation;
     protected float scale;
 
-    public Entity(int vaoID, int vertexCount, Texture texture) {
-        super(vaoID, vertexCount, texture);
-        position = new Vector3f(0,0,0);
+    public Entity(Model model, Vector3f position) {
+        super(model.getVaoID(), model.getVertexCount(), model.getMaterial());
+        this.position = position;
         rotation = new Vector3f(0,0,0);
         scale = 1.0f;
     }
 
-    public Entity(Model model) {
-        super(model.getVaoID(), model.getVertexCount(), model.getTexture());
-        position = new Vector3f(0,0,-1);
-        rotation = new Vector3f(0,0,0);
-        scale = 1.0f;
+    public void translate(float dx, float dy, float dz) {
+        position.translate(dx, dy, dz);
+    }
+
+    public void rotate(float dx, float dy, float dz) {
+        rotation.translate(dx, dy, dz);
     }
 
     public Vector3f getPosition() {

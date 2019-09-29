@@ -1,16 +1,16 @@
 package engine.loaders;
 
-import engine.renderer.Texture;
+import engine.renderer.Material;
 
 public class Model {
     private int vaoID;
     private int vertexCount;
-    private Texture texture;
+    private Material material;
 
-    public Model(int vaoID, int vertexCount, Texture texture) {
+    public Model(int vaoID, int vertexCount, Material texture) {
         this.vaoID = vaoID;
         this.vertexCount = vertexCount;
-        this.texture = texture;
+        this.material = texture;
     }
 
     public int getVaoID() {
@@ -29,11 +29,11 @@ public class Model {
         this.vertexCount = vertexCount;
     }
 
-    public Texture getTexture() {
-        return texture;
+    public Material getMaterial() {
+        return material;
     }
 
-    public void setTexture(Texture texture) {
-        this.texture = texture;
+    public void setMaterial(Material material) {
+        this.material = material;
     }
 }

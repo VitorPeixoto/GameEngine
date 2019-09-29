@@ -2,6 +2,7 @@ package engine.renderer;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 public class Camera {
     private Vector3f position;
@@ -9,6 +10,10 @@ public class Camera {
 
     public Camera() {
         this.position = new Vector3f(0, 0, 0);
+    }
+
+    public Camera(Vector3f position) {
+        this.position = position;
     }
 
     public void move() {
@@ -23,6 +28,12 @@ public class Camera {
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_D)) {
             position.x += 0.02;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_LBRACKET)) {
+            position.y += 0.02;
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_RBRACKET)) {
+            position.y -= 0.02;
         }
 
         if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {

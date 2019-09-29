@@ -1,15 +1,25 @@
-#version 400 core
+#version 430
+
+precision highp float;
 
 in vec3 position;
-in vec2 in_uv_coordinates;
+in vec2 uv;
+in vec3 normal;
 
-out vec2 uv_coordinates;
+out Vertex {
+	vec3 position;
+	vec3 normal;
+	vec2 uv;
+} out_vertex;
 
-uniform mat4 transformation_matrix;
-uniform mat4 projection_matrix;
-uniform mat4 view_matrix;
+uniform mat4 normal_matrix;
+uniform mat4 model_view_matrix;
+uniform mat4 model_view_projection_matrix;
 
-void main(void) {
-    gl_Position = projection_matrix * view_matrix * transformation_matrix * vec4(position, 1.0);
-    uv_coordinates = in_uv_coordinates;
+void main() {
+	out_vertex.uv = uv;
+    out_vertex.normal = normalize(normal_matrix * vec4(normal, 1)).xyz;
+	out_vertex.position = vec3(model_view_matrix * vec4(position, 1));
+
+    gl_Position = model_view_projection_matrix * vec4(position, 1);
 }

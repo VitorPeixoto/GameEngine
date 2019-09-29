@@ -1,8 +1,8 @@
 package engine.loaders;
 
 import engine.Constants;
+import engine.renderer.Material;
 import engine.renderer.Texture;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -19,7 +19,7 @@ public class ModelLoader extends WavefrontLoader {
     private static List<Integer> vbos     = new ArrayList<Integer>();
     private static List<Integer> textures = new ArrayList<Integer>();
 
-    public static Model loadModel(String fileName, String textureName) throws IOException {
+    public static Model loadModel(String fileName) throws IOException {
         int vaoID = createVAO();
 
         WavefrontObject object = ModelLoader.read(fileName);
@@ -29,9 +29,13 @@ public class ModelLoader extends WavefrontLoader {
         bindIndexesBuffer(indices);
         storeDataIntoAttributeList(Constants.VERTEX_BUFFER_INDEX, 3, floatToFloatBuffer(object.getVerticeArray()));
         storeDataIntoAttributeList(Constants.UV_BUFFER_INDEX, 2, floatToFloatBuffer(object.getUvArray()));
+        storeDataIntoAttributeList(Constants.NORMAL_BUFFER_INDEX, 3, floatToFloatBuffer(object.getNormalArray()));
         unbindVAO();
 
-        return new Model(vaoID, indices.capacity(), new Texture(loadTexture(textureName)));
+        Material material = readMaterial(fileName);
+        material.setTexture(new Texture(loadTexture(material.getTextureName())));
+
+        return new Model(vaoID, indices.capacity(), material);
     }
 
     private static int createVAO() {
@@ -70,23 +74,10 @@ public class ModelLoader extends WavefrontLoader {
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
     }
 
-    private static IntBuffer intToIntBuffer(int[] data) {
-        IntBuffer buffer = BufferUtils.createIntBuffer(data.length);
-        buffer.put(data);
-        buffer.flip();
-        return buffer;
-    }
-
-    private static FloatBuffer floatToFloatBuffer(float[] data) {
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
-        buffer.put(data);
-        buffer.flip();
-        return buffer;
-    }
-
     public static void deleteAll() {
         vaos.forEach( (vao) -> GL30.glDeleteVertexArrays(vao));
         vbos.forEach( (vbo) -> GL15.glDeleteBuffers(vbo));
         textures.forEach( (tex) -> GL11.glDeleteTextures(tex));
     }
+
 }
