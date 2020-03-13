@@ -12,11 +12,12 @@ import org.lwjgl.util.vector.Vector3f;
 public class StaticShader extends AbstractShaderProgram {
     private static final String parent = "/shaders/";
 
+    private static final int numLights = 1;
+
     private int location_modelview_matrix,
                 location_modelviewprojection_matrix,
                 location_normal_matrix,
 
-                location_light_position,
                 location_light_color,
 
                 location_ambient_color,
@@ -26,11 +27,14 @@ public class StaticShader extends AbstractShaderProgram {
                 location_material_Ka,
                 location_material_Kd,
                 location_material_Ks,
-                location_material_Sh,
+                location_material_Sh
+    ;
 
-                location_light_La,
-                location_light_Ld,
-                location_light_Ls ;
+    private int[] location_light_position,
+                  location_light_La,
+                  location_light_Ld,
+                  location_light_Ls
+    ;
 
     public StaticShader() {
         super(ResourceManager.get(parent, "vertex_shader.glsl"), ResourceManager.get(parent, "fragment_shader.glsl"));
@@ -42,6 +46,11 @@ public class StaticShader extends AbstractShaderProgram {
 
     @Override
     protected void getAllUniformLocations() {
+        location_light_position = new int[numLights];
+        location_light_La = new int[numLights];
+        location_light_Ld = new int[numLights];
+        location_light_Ls = new int[numLights];
+
         location_modelview_matrix = super.getUniformLocation("model_view_matrix");
         location_modelviewprojection_matrix = super.getUniformLocation("model_view_projection_matrix");
         location_normal_matrix = super.getUniformLocation("normal_matrix");
@@ -63,10 +72,12 @@ public class StaticShader extends AbstractShaderProgram {
         location_material_Ks = super.getUniformLocation("material.specular_coefficient");
         location_material_Sh = super.getUniformLocation("material.specular_shininess");
 
-        location_light_position = super.getUniformLocation("lights[0].position");
-        location_light_La = super.getUniformLocation("lights[0].ambient_light");
-        location_light_Ld = super.getUniformLocation("lights[0].diffuse_light");
-        location_light_Ls = super.getUniformLocation("lights[0].specular_light");
+        for(int i = 0; i < numLights; i++) {
+            location_light_position[i] = super.getUniformLocation("lights["+i+"].position");
+            location_light_La[i] = super.getUniformLocation("lights["+i+"].ambient_light");
+            location_light_Ld[i] = super.getUniformLocation("lights["+i+"].diffuse_light");
+            location_light_Ls[i] = super.getUniformLocation("lights["+i+"].specular_light");
+        }
     }
 
     @Override
@@ -92,20 +103,14 @@ public class StaticShader extends AbstractShaderProgram {
         super.loadMatrix(location_normal_matrix, normalMatrix);
     }
 
-    public void loadLight(Light light) {
-        /*super.loadVec3f(location_light_color, light.getColor());
-        super.loadVec3f(location_light_position, light.getPosition());*/
-
-        super.loadVec3f(location_light_position, light.getPosition());
-        super.loadVec3f(location_light_La, new Vector3f(.5f,.5f,.5f));
-        super.loadVec3f(location_light_Ld, new Vector3f(.5f,.5f,.5f));
-        super.loadVec3f(location_light_Ls, new Vector3f(.5f,.5f,.5f));
+    public void loadLight(Light light, int index) {
+        super.loadVec3f(location_light_position[index], light.getPosition());
+        super.loadVec3f(location_light_La[index], new Vector3f(.5f,.5f,.5f));
+        super.loadVec3f(location_light_Ld[index], new Vector3f(.5f,.5f,.5f));
+        super.loadVec3f(location_light_Ls[index], new Vector3f(.5f,.5f,.5f));
     }
 
     public void loadMaterial(Material material) {
-        /*super.loadVec3f(location_specular_color, material.getSpecularColor());
-        super.loadVec3f(location_ambient_color, material.getAmbientColor());
-        super.loadVec3f(location_diffuse_color, material.getDiffuseColor());*/
         super.loadVec3f(location_material_Ka, material.getAmbientColor());
         super.loadVec3f(location_material_Ks, material.getSpecularColor());
         super.loadVec3f(location_material_Kd, material.getDiffuseColor());

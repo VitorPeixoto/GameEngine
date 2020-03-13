@@ -28,11 +28,28 @@ public class ModelLoader extends WavefrontLoader {
 
         bindIndexesBuffer(indices);
         storeDataIntoAttributeList(Constants.VERTEX_BUFFER_INDEX, 3, floatToFloatBuffer(object.getVerticeArray()));
-        storeDataIntoAttributeList(Constants.UV_BUFFER_INDEX, 2, floatToFloatBuffer(object.getUvArray()));
+        if(object.getUvArray().length > 0) storeDataIntoAttributeList(Constants.UV_BUFFER_INDEX, 2, floatToFloatBuffer(object.getUvArray()));
         storeDataIntoAttributeList(Constants.NORMAL_BUFFER_INDEX, 3, floatToFloatBuffer(object.getNormalArray()));
         unbindVAO();
 
         Material material = readMaterial(fileName);
+        if(object.getUvArray().length > 0) material.setTexture(new Texture(loadTexture(material.getTextureName())));
+
+        return new Model(vaoID, indices.capacity(), material);
+    }
+
+    public static Model generateModel(float[] verticeArray, float[] uvArray, float[] normalArray, int[] indiceArray) throws IOException {
+        int vaoID = createVAO();
+
+        IntBuffer indices = intToIntBuffer(indiceArray);
+
+        bindIndexesBuffer(indices);
+        storeDataIntoAttributeList(Constants.VERTEX_BUFFER_INDEX, 3, floatToFloatBuffer(verticeArray));
+        storeDataIntoAttributeList(Constants.UV_BUFFER_INDEX, 2, floatToFloatBuffer(uvArray));
+        storeDataIntoAttributeList(Constants.NORMAL_BUFFER_INDEX, 3, floatToFloatBuffer(normalArray));
+        unbindVAO();
+
+        Material material = readMaterial("Earth");
         material.setTexture(new Texture(loadTexture(material.getTextureName())));
 
         return new Model(vaoID, indices.capacity(), material);

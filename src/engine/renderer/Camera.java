@@ -1,23 +1,32 @@
 package engine.renderer;
 
-import org.lwjgl.input.Keyboard;
+import engine.entity.Player;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
 
 public class Camera {
     private Vector3f position;
-    private float pitch, yaw = 0, roll;
 
-    public Camera() {
-        this.position = new Vector3f(0, 0, 0);
-    }
+    private float zoom = 50;
+    private float horizontalAngle = 0;
+    private float pitch = 20, yaw = 0, roll;
 
-    public Camera(Vector3f position) {
-        this.position = position;
+    private Player target;
+
+    public Camera(Player player) {
+        target = player;
+        this.position = new Vector3f();
+        this.move();
     }
 
     public void move() {
-        if(Keyboard.isKeyDown(Keyboard.KEY_W)) {
+        this.calculateZoom();
+        this.calculatePitch();
+        this.calculateHorizontalAngle();
+
+        this.calculatePosition();
+
+        /*if(Keyboard.isKeyDown(Keyboard.KEY_W)) {
             position.z -= 0.02;
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_A)) {
@@ -61,8 +70,47 @@ public class Camera {
 
         if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
             System.exit(0);
-        }
+        }*/
 
+    }
+
+    private void calculatePosition() {
+        float horizontalDistance = getHorizontalDistance();
+        float verticalDistance = getVerticalDistance();
+
+        float totalHorizontalAngle = this.horizontalAngle - target.getRotation().getY();
+
+        this.position.set(
+                (float)(target.getPosition().getX() + (horizontalDistance * Math.sin(Math.toRadians(totalHorizontalAngle)))),
+                target.getPosition().getY() + verticalDistance,
+                (float)(target.getPosition().getZ() - (horizontalDistance * Math.cos(Math.toRadians(totalHorizontalAngle))))
+        );
+
+        this.yaw = 180 + totalHorizontalAngle;
+    }
+
+    private void calculateZoom() {
+        this.zoom -= Mouse.getDWheel() * 0.1f;
+    }
+
+    private void calculatePitch() {
+        if(Mouse.isButtonDown(1)) {
+            this.pitch -= Mouse.getDY() * 0.1f;
+        }
+    }
+
+    private void calculateHorizontalAngle() {
+        if(Mouse.isButtonDown(0)) {
+            this.horizontalAngle -= Mouse.getDX() * 0.3f;
+        }
+    }
+
+    private float getHorizontalDistance() {
+        return (float) (this.zoom * Math.cos(Math.toRadians(this.pitch)));
+    }
+
+    private float getVerticalDistance() {
+        return (float) (this.zoom * Math.sin(Math.toRadians(this.pitch)));
     }
 
     public Vector3f getPosition() {

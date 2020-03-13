@@ -49,14 +49,21 @@ public abstract class WavefrontLoader {
             else if(line.startsWith("f ") && !faces) {
                 faces = true;
 
-                uvArray     = new float[vertices.size() * 2];
                 normalArray = new float[vertices.size() * 3];
 
-                processFace(line, normalArray, uvArray, indexes, normals, uvs, true);
+                if(uvs.size() > 0) {
+                    uvArray     = new float[vertices.size() * 2];
+                    processFace(line, normalArray, uvArray, indexes, normals, uvs, true);
+                } else {
+                    processFace(line, normalArray, indexes, normals);
+                }
             }
             // Faces
             else if(line.startsWith("f ")) {
-                processFace(line, normalArray, uvArray, indexes, normals, uvs, true);
+                if(uvs.size() > 0)
+                    processFace(line, normalArray, uvArray, indexes, normals, uvs, true);
+                else
+                    processFace(line, normalArray, indexes, normals);
             }
         }
 
@@ -168,8 +175,34 @@ public abstract class WavefrontLoader {
         buffer.flip();
         return buffer;
     }
+
     private static void processFace(String line, float[] normalArray, float[] uvArray,
                                     List<Integer> indexes, List<Vector3f> normals, List<Vector2f> uvs, boolean flipY) {
+
+        String[] vertices = line.split(" ");
+        if (vertices.length != 4) throw new IllegalArgumentException("Incorrect face vertices.");
+
+        for (int index = 1; index < 4; index++) {
+            String[] vertex = vertices[index].split("/");
+            if (vertex.length != 3) throw new IllegalArgumentException("Incorrect vertex information.");
+
+            int coordinate = Integer.parseInt(vertex[POS]) - 1;
+            int normal = Integer.parseInt(vertex[NOR]) - 1;
+            int uv = Integer.parseInt(vertex[UV]) - 1;
+
+            indexes.add(coordinate);
+
+            uvArray[coordinate * 2] = uvs.get(uv).getX(); // U
+            uvArray[coordinate * 2 + 1] = (flipY ? (1 - uvs.get(uv).getY()) : uvs.get(uv).getY()); // V
+
+            normalArray[coordinate * 3] = normals.get(normal).getX();
+            normalArray[coordinate * 3 + 1] = normals.get(normal).getY();
+            normalArray[coordinate * 3 + 2] = normals.get(normal).getZ();
+        }
+    }
+
+    private static void processFace(String line, float[] normalArray,
+                                    List<Integer> indexes, List<Vector3f> normals) {
 
         String[] vertices = line.split(" ");
         if(vertices.length != 4) throw new IllegalArgumentException("Incorrect face vertices.");
@@ -180,12 +213,8 @@ public abstract class WavefrontLoader {
 
             int coordinate = Integer.parseInt(vertex[POS]) - 1;
             int normal     = Integer.parseInt(vertex[NOR]) - 1;
-            int uv         = Integer.parseInt(vertex[UV])  - 1;
 
             indexes.add(coordinate);
-
-            uvArray[coordinate * 2] = uvs.get(uv).getX(); // U
-            uvArray[coordinate * 2 + 1] = (flipY ? (1 - uvs.get(uv).getY()) : uvs.get(uv).getY()); // V
 
             normalArray[coordinate*3]     = normals.get(normal).getX();
             normalArray[coordinate*3 + 1] = normals.get(normal).getY();
